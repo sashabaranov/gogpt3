@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 Your issue may already be reported!
-Please search on the [issue tracker](https://github.com/sashabaranov/go-openai/issues) before creating one.
+Please search on the [issue tracker](https://github.com/alejandrojnm/go-openai/issues) before creating one.
 
 **Describe the bug**
 A clear and concise description of what the bug is. If it's an API-related bug, please provide relevant endpoint(s).

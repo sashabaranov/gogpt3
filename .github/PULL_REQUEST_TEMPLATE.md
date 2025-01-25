@@ -1,5 +1,5 @@
 A similar PR may already be submitted!
-Please search among the [Pull request](https://github.com/sashabaranov/go-openai/pulls) before creating one.
+Please search among the [Pull request](https://github.com/alejandrojnm/go-openai/pulls) before creating one.
 
 If your changes introduce breaking changes, please prefix the title of your pull request with "[BREAKING_CHANGES]". This allows for clear identification of such changes in the 'What's Changed' section on the release page, making it developer-friendly.
 
