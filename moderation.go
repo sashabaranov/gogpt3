@@ -26,6 +26,13 @@ var (
 	ErrModerationInvalidModel = errors.New("this model is not supported with moderation, please use text-moderation-stable or text-moderation-latest instead") //nolint:lll
 )
 
+type ModerationItemType string
+
+const (
+	ModerationItemTypeText     ModerationItemType = "text"
+	ModerationItemTypeImageURL ModerationItemType = "image_url"
+)
+
 var validModerationModel = map[string]struct{}{
 	ModerationOmniLatest:   {},
 	ModerationOmni20240926: {},
@@ -39,11 +46,63 @@ type ModerationRequest struct {
 	Model string `json:"model,omitempty"`
 }
 
+func (m ModerationRequest) Convert() ModerationRequestV2 {
+	return ModerationRequestV2{
+		Input: m.Input,
+		Model: m.Model,
+	}
+}
+
+type ModerationStrArrayRequest struct {
+	Input []string `json:"input,omitempty"`
+	Model string   `json:"model,omitempty"`
+}
+
+func (m ModerationStrArrayRequest) Convert() ModerationRequestV2 {
+	return ModerationRequestV2{
+		Input: m.Input,
+		Model: m.Model,
+	}
+}
+
+type ModerationArrayRequest struct {
+	Input []ModerationRequestItem `json:"input,omitempty"`
+	Model string                  `json:"model,omitempty"`
+}
+
+func (m ModerationArrayRequest) Convert() ModerationRequestV2 {
+	return ModerationRequestV2{
+		Input: m.Input,
+		Model: m.Model,
+	}
+}
+
+type ModerationRequestItem struct {
+	Type ModerationItemType `json:"type"`
+
+	ImageURL ModerationImageURL `json:"image_url,omitempty"`
+	Text     string             `json:"text,omitempty"`
+}
+
+type ModerationImageURL struct {
+	URL string `json:"url,omitempty"`
+}
+
+type ModerationRequestV2 struct {
+	Input any    `json:"input,omitempty"`
+	Model string `json:"model,omitempty"`
+}
+
+type ModerationRequestConverter interface {
+	Convert() ModerationRequestV2
+}
+
 // Result represents one of possible moderation results.
 type Result struct {
-	Categories     ResultCategories     `json:"categories"`
-	CategoryScores ResultCategoryScores `json:"category_scores"`
-	Flagged        bool                 `json:"flagged"`
+	Categories                ResultCategories         `json:"categories"`
+	CategoryScores            ResultCategoryScores     `json:"category_scores"`
+	Flagged                   bool                     `json:"flagged"`
+	CategoryAppliedInputTypes CategoryAppliedInputType `json:"category_applied_input_types"`
 }
 
 // ResultCategories represents Categories of Result.
@@ -59,6 +118,8 @@ type ResultCategories struct {
 	SexualMinors          bool `json:"sexual/minors"`
 	Violence              bool `json:"violence"`
 	ViolenceGraphic       bool `json:"violence/graphic"`
+	Illicit               bool `json:"illicit"`
+	IllicitViolent        bool `json:"illicit/violent"`
 }
 
 // ResultCategoryScores represents CategoryScores of Result.
@@ -74,6 +135,24 @@ type ResultCategoryScores struct {
 	SexualMinors          float32 `json:"sexual/minors"`
 	Violence              float32 `json:"violence"`
 	ViolenceGraphic       float32 `json:"violence/graphic"`
+	Illicit               float32 `json:"illicit"`
+	IllicitViolent        float32 `json:"illicit/violent"`
+}
+
+type CategoryAppliedInputType struct {
+	Harassment            []ModerationItemType `json:"harassment"`
+	HarassmentThreatening []ModerationItemType `json:"harassment/threatening"`
+	Sexual                []ModerationItemType `json:"sexual"`
+	Hate                  []ModerationItemType `json:"hate"`
+	HateThreatening       []ModerationItemType `json:"hate/threatening"`
+	Illicit               []ModerationItemType `json:"illicit"`
+	IllicitViolent        []ModerationItemType `json:"illicit/violent"`
+	SelfHarmIntent        []ModerationItemType `json:"self-harm/intent"`
+	SelfHarmInstructions  []ModerationItemType `json:"self-harm/instructions"`
+	SelfHarm              []ModerationItemType `json:"self-harm"`
+	SexualMinors          []ModerationItemType `json:"sexual/minors"`
+	Violence              []ModerationItemType `json:"violence"`
+	ViolenceGraphic       []ModerationItemType `json:"violence/graphic"`
 }
 
 // ModerationResponse represents a response structure for moderation API.
@@ -87,15 +166,18 @@ type ModerationResponse struct {
 
 // Moderations — perform a moderation api call over a string.
 // Input can be an array or slice but a string will reduce the complexity.
-func (c *Client) Moderations(ctx context.Context, request ModerationRequest) (response ModerationResponse, err error) {
-	if _, ok := validModerationModel[request.Model]; len(request.Model) > 0 && !ok {
+func (c *Client) Moderations(ctx context.Context,
+	request ModerationRequestConverter) (response ModerationResponse, err error) {
+	realRequest := request.Convert()
+
+	if _, ok := validModerationModel[realRequest.Model]; len(realRequest.Model) > 0 && !ok {
 		err = ErrModerationInvalidModel
 		return
 	}
 	req, err := c.newRequest(
 		ctx,
 		http.MethodPost,
-		c.fullURL("/moderations", withModel(request.Model)),
+		c.fullURL("/moderations", withModel(realRequest.Model)),
 		withBody(&request),
 	)
 	if err != nil {
