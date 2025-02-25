@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 )
 
@@ -51,7 +52,10 @@ type File struct {
 
 // FilesList is a list of files that belong to the user or organization.
 type FilesList struct {
-	Files []File `json:"data"`
+	Files   []File  `json:"data"`
+	LastID  *string `json:"last_id"`
+	FirstID *string `json:"first_id"`
+	HasMore bool    `json:"has_more"`
 
 	httpHeader
 }
@@ -138,7 +142,33 @@ func (c *Client) DeleteFile(ctx context.Context, fileID string) (err error) {
 // ListFiles Lists the currently available files,
 // and provides basic information about each file such as the file name and purpose.
 func (c *Client) ListFiles(ctx context.Context) (files FilesList, err error) {
-	req, err := c.newRequest(ctx, http.MethodGet, c.fullURL("/files"))
+	return c.ListFilesWithOpts(ctx, nil, nil, nil)
+}
+
+func (c *Client) ListFilesWithOpts(
+	ctx context.Context,
+	limit *int,
+	order *string,
+	after *string,
+) (files FilesList, err error) {
+	urlValues := url.Values{}
+	if limit != nil {
+		urlValues.Add("limit", fmt.Sprintf("%d", *limit))
+	}
+	if order != nil {
+		urlValues.Add("order", *order)
+	}
+	if after != nil {
+		urlValues.Add("after", *after)
+	}
+
+	encodedValues := ""
+	if len(urlValues) > 0 {
+		encodedValues = "?" + urlValues.Encode()
+	}
+
+	urlSuffix := fmt.Sprintf("%s%s", "/files", encodedValues)
+	req, err := c.newRequest(ctx, http.MethodGet, c.fullURL(urlSuffix))
 	if err != nil {
 		return
 	}

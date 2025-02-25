@@ -102,6 +102,21 @@ func TestListFile(t *testing.T) {
 	checks.NoError(t, err, "ListFiles error")
 }
 
+func TestListFileWithOpts(t *testing.T) {
+	limit := 10
+	order := "desc"
+	afterID := "deadbeef"
+
+	client, server, teardown := setupOpenAITestServer()
+	defer teardown()
+	server.RegisterHandler("/v1/files", func(w http.ResponseWriter, _ *http.Request) {
+		resBytes, _ := json.Marshal(openai.FilesList{})
+		fmt.Fprintln(w, string(resBytes))
+	})
+	_, err := client.ListFilesWithOpts(context.Background(), &limit, &order, &afterID)
+	checks.NoError(t, err, "ListFiles error")
+}
+
 func TestGetFile(t *testing.T) {
 	client, server, teardown := setupOpenAITestServer()
 	defer teardown()
