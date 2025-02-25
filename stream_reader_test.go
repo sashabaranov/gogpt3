@@ -75,4 +75,52 @@ func TestStreamReaderRecvRaw(t *testing.T) {
 	if !bytes.Equal(rawLine, []byte("{\"key\": \"value\"}")) {
 		t.Fatalf("Did not return raw line: %v", string(rawLine))
 	}
+
+	streamDataPrefixWithoutSpace := &streamReader[ChatCompletionStreamResponse]{
+		reader: bufio.NewReader(bytes.NewReader([]byte("data:{\"key\": \"value\"}\n"))),
+	}
+	rawLine1, err := streamDataPrefixWithoutSpace.RecvRaw()
+	if err != nil {
+		t.Fatalf("Did not return raw line: %v", err)
+	}
+	if !bytes.Equal(rawLine1, []byte("{\"key\": \"value\"}")) {
+		t.Fatalf("Did not return raw line: %v", string(rawLine1))
+	}
+}
+
+func TestStreamReaderParseLine(t *testing.T) {
+	testUnits := []struct {
+		rawLine []byte
+		want    [2][]byte
+	}{
+		{[]byte("data: value"), [2][]byte{[]byte("data"), []byte("value")}},
+		{[]byte("datavalue"), [2][]byte{[]byte("datavalue"), []byte("")}},
+		{[]byte("data: "), [2][]byte{[]byte("data"), nil}},
+		{[]byte("data:value"), [2][]byte{[]byte("data"), []byte("value")}},
+		{[]byte(":"), [2][]byte{[]byte(""), []byte("")}},
+		{[]byte(""), [2][]byte{[]byte(""), []byte("")}},
+	}
+
+	for _, testUnit := range testUnits {
+		stream := &streamReader[ChatCompletionStreamResponse]{}
+		name, value := stream.parseLine(testUnit.rawLine)
+		if !bytes.Equal(name, testUnit.want[0]) || !bytes.Equal(value, testUnit.want[1]) {
+			t.Errorf("parseLine(%q) = %q, %q; want %q, %q",
+				testUnit.rawLine, name, value, testUnit.want[0], testUnit.want[1])
+		}
+	}
+}
+
+func TestStreamReaderHandleDataFlagWriteErrAccumulatorError(t *testing.T) {
+	stream := &streamReader[ChatCompletionStreamResponse]{
+		errAccumulator: &utils.DefaultErrorAccumulator{
+			Buffer: &test.FailingErrorBuffer{},
+		},
+	}
+	res, err := stream.handleDataFlag([]byte(`{"error`))
+	if res != nil {
+		t.Fatalf("Did not return nil when write failed: %v", res)
+	}
+	checks.ErrorIs(t, err, test.ErrTestErrorAccumulatorWriteFailed,
+		"Did not return error when write failed", err.Error())
 }
