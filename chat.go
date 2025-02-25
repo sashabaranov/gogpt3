@@ -67,6 +67,7 @@ type PromptAnnotation struct {
 }
 
 type ImageURLDetail string
+type PDFURLDetail string
 
 const (
 	ImageURLDetailHigh ImageURLDetail = "high"
@@ -78,18 +79,24 @@ type ChatMessageImageURL struct {
 	URL    string         `json:"url,omitempty"`
 	Detail ImageURLDetail `json:"detail,omitempty"`
 }
+type ChatMessagePDFURL struct {
+	URL    string       `json:"url,omitempty"`
+	Detail PDFURLDetail `json:"detail,omitempty"`
+}
 
 type ChatMessagePartType string
 
 const (
 	ChatMessagePartTypeText     ChatMessagePartType = "text"
 	ChatMessagePartTypeImageURL ChatMessagePartType = "image_url"
+	ChatMessagePartTypePDFURL   ChatMessagePartType = "pdf_url"
 )
 
 type ChatMessagePart struct {
 	Type     ChatMessagePartType  `json:"type,omitempty"`
 	Text     string               `json:"text,omitempty"`
 	ImageURL *ChatMessageImageURL `json:"image_url,omitempty"`
+	PDFURL   *ChatMessagePDFURL   `json:"pdf_url,omitempty"`
 }
 
 type ChatCompletionMessage struct {
