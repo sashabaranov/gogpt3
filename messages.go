@@ -162,7 +162,7 @@ func (c *Client) RetrieveMessage(
 func (c *Client) ModifyMessage(
 	ctx context.Context,
 	threadID, messageID string,
-	metadata map[string]string,
+	metadata map[string]any,
 ) (msg Message, err error) {
 	urlSuffix := fmt.Sprintf("/threads/%s/%s/%s", threadID, messagesSuffix, messageID)
 	req, err := c.newRequest(ctx, http.MethodPost, c.fullURL(urlSuffix),

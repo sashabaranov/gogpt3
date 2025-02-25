@@ -262,7 +262,7 @@ type ChatCompletionRequest struct {
 	// Controls effort on reasoning for reasoning models. It can be set to "low", "medium", or "high".
 	ReasoningEffort string `json:"reasoning_effort,omitempty"`
 	// Metadata to store with the completion.
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata map[string]any `json:"metadata,omitempty"`
 }
 
 type StreamOptions struct {

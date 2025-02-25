@@ -233,7 +233,7 @@ func TestMessages(t *testing.T) {
 	}
 
 	msg, err = client.ModifyMessage(ctx, threadID, messageID,
-		map[string]string{
+		map[string]any{
 			"foo": "bar",
 		})
 	checks.NoError(t, err, "ModifyMessage error")
