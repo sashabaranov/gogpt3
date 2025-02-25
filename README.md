@@ -206,6 +206,56 @@ func main() {
 </details>
 
 <details>
+<summary>Audio Text-To-Speech</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"os"
+
+	openai "github.com/sashabaranov/go-openai"
+)
+
+func main() {
+	c := openai.NewClient("your token")
+	ctx := context.Background()
+
+	req := openai.CreateSpeechRequest{
+		Model:          openai.TTSModel1,
+		Input:          "Testing text to speech API",
+		Voice:          openai.VoiceAlloy,
+		ResponseFormat: openai.SpeechResponseFormatMp3,
+		Speed:          1.0,
+	}
+	resp, err := c.CreateSpeech(ctx, req)
+	if err != nil {
+		fmt.Printf("Speech error: %v\n", err)
+		return
+	}
+
+	out, err := os.Create("output.mp3")
+	if err != nil {
+		fmt.Printf("Creating output file: %v\n", err)
+		return
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp)
+	if err != nil {
+		fmt.Printf("Writing output file error: %v\n", err)
+		return
+	}
+}
+
+```
+
+</details>
+
+<details>
 <summary>Audio Speech-To-Text</summary>
 
 ```go
