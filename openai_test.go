@@ -29,7 +29,7 @@ func setupAzureTestServer() (client *openai.Client, server *test.ServerTest, tea
 
 // numTokens Returns the number of GPT-3 encoded tokens in the given text.
 // This function approximates based on the rule of thumb stated by OpenAI:
-// https://beta.openai.com/tokenizer/
+// https://beta.openai.com/tokenizer.
 //
 // TODO: implement an actual tokenizer for GPT-3 and Codex (once available).
 func numTokens(s string) int {
