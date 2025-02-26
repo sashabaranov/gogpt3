@@ -90,6 +90,14 @@ func withContentType(contentType string) requestOption {
 	}
 }
 
+func withCustomHeaders(headers map[string]string) requestOption {
+	return func(args *requestOptions) {
+		for key, value := range headers {
+			args.header.Set(key, value)
+		}
+	}
+}
+
 func withBetaAssistantVersion(version string) requestOption {
 	return func(args *requestOptions) {
 		args.header.Set("OpenAI-Beta", fmt.Sprintf("assistants=%s", version))
