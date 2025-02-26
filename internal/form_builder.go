@@ -5,7 +5,6 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
-	"path"
 )
 
 type FormBuilder interface {
@@ -31,7 +30,7 @@ func (fb *DefaultFormBuilder) CreateFormFile(fieldname string, file *os.File) er
 }
 
 func (fb *DefaultFormBuilder) CreateFormFileReader(fieldname string, r io.Reader, filename string) error {
-	return fb.createFormFile(fieldname, r, path.Base(filename))
+	return fb.createFormFile(fieldname, r, filename)
 }
 
 func (fb *DefaultFormBuilder) createFormFile(fieldname string, r io.Reader, filename string) error {
