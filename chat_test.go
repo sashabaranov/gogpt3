@@ -1,7 +1,10 @@
 package openai_test
 
 import (
+	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -866,4 +869,100 @@ func TestFinishReason(t *testing.T) {
 			t.Errorf("%s should be quoted", r)
 		}
 	}
+}
+
+func TestChatCompletionRequest_MarshalJSON_LargeImage_Base64(t *testing.T) {
+	// generate 20 mb of random data
+	imageData := generateEncodedData(t, 20*1024*1024)
+	imageURL := encodeImage(t, "image/png", imageData)
+	req := generateRequestWithImage(imageURL)
+
+	_, err := json.Marshal(req)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+}
+
+func TestChatCompletionRequest_MarshalJSON_LargeImage_Binary(t *testing.T) {
+	// generate 20 mb of random data
+	imageData := generateEncodedData(t, 20*1024*1024)
+	imageURL := openai.BinaryImageURL{
+		MimeType: "image/png",
+		Data:     imageData,
+	}
+	req := generateRequestWithImage(imageURL)
+
+	_, err := json.Marshal(req)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+}
+
+func generateEncodedData(t *testing.T, size int64) []byte {
+	data := make([]byte, size)
+	_, err := rand.Read(data)
+	if err != nil {
+		t.Fatalf("Failed to generate random data: %v", err)
+	}
+	return data
+}
+
+func generateRequestWithImage(imageURL any) openai.ChatCompletionRequest {
+	msg := openai.ChatCompletionMessage{
+		Role: openai.ChatMessageRoleUser,
+		MultiContent: []openai.ChatMessagePart{
+			{
+				Type: openai.ChatMessagePartTypeText,
+				Text: "Hello, world!",
+			},
+			{
+				Type: openai.ChatMessagePartTypeImageURL,
+				ImageURL: &openai.ChatMessageImageURL{
+					URL:    imageURL,
+					Detail: openai.ImageURLDetailHigh,
+				},
+			},
+		},
+		Name: "test-name",
+		FunctionCall: &openai.FunctionCall{
+			Name:      "test-function",
+			Arguments: `{"arg1":"value1"}`,
+		},
+		ToolCalls: []openai.ToolCall{
+			{
+				ID:   "tool1",
+				Type: openai.ToolTypeFunction,
+				Function: openai.FunctionCall{
+					Name:      "tool-function",
+					Arguments: `{"arg2":"value2"}`,
+				},
+			},
+		},
+		ToolCallID: "tool-call-id",
+	}
+	req := openai.ChatCompletionRequest{
+		Messages: []openai.ChatCompletionMessage{msg},
+	}
+	return req
+}
+
+func encodeImage(t *testing.T, mimeType string, data []byte) []byte {
+	encodedLength := base64.StdEncoding.EncodedLen(len(data))
+	buf := bytes.NewBuffer(make([]byte, 0, 13+len(mimeType)+encodedLength))
+
+	buf.WriteString(`data:`)
+	buf.WriteString(mimeType)
+	buf.WriteString(`;base64,`)
+
+	// base64 encode data and write it to the buffer
+	encoder := base64.NewEncoder(base64.StdEncoding, buf)
+	_, err := encoder.Write(data)
+	if err != nil {
+		t.Fatalf("Failed to encode image: %v", err)
+	}
+	err = encoder.Close()
+	if err != nil {
+		t.Fatalf("Failed to encode image: %v", err)
+	}
+	return buf.Bytes()
 }

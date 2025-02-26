@@ -1,7 +1,9 @@
 package openai
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -75,8 +77,37 @@ const (
 )
 
 type ChatMessageImageURL struct {
-	URL    string         `json:"url,omitempty"`
+	// URL can be a string or a BinaryImageURL object.
+	URL    any            `json:"url,omitempty"`
 	Detail ImageURLDetail `json:"detail,omitempty"`
+}
+
+type BinaryImageURL struct {
+	MimeType string
+	Data     []byte
+}
+
+func (b BinaryImageURL) MarshalJSON() ([]byte, error) {
+	encodedLength := base64.StdEncoding.EncodedLen(len(b.Data))
+	buf := bytes.NewBuffer(make([]byte, 0, 15+len(b.MimeType)+encodedLength))
+
+	buf.WriteString(`"data:`)
+	buf.WriteString(b.MimeType)
+	buf.WriteString(`;base64,`)
+
+	// base64 encode data and write it to the buffer
+	encoder := base64.NewEncoder(base64.StdEncoding, buf)
+	_, err := encoder.Write(b.Data)
+	if err != nil {
+		return nil, err
+	}
+	err = encoder.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	buf.WriteString(`"`)
+	return buf.Bytes(), nil
 }
 
 type ChatMessagePartType string
