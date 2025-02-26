@@ -131,6 +131,12 @@ func reflectSchemaObject(t reflect.Type) (*Definition, error) {
 			required = false
 		}
 
+		enumTag := field.Tag.Get("enum")
+		var enumValues []string
+		if enumTag != "" {
+			enumValues = strings.Split(enumTag, ",")
+		}
+
 		item, err := reflectSchema(field.Type)
 		if err != nil {
 			return nil, err
@@ -139,6 +145,11 @@ func reflectSchemaObject(t reflect.Type) (*Definition, error) {
 		if description != "" {
 			item.Description = description
 		}
+
+		if len(enumValues) > 0 {
+			item.Enum = enumValues
+		}
+
 		properties[jsonTag] = *item
 
 		if s := field.Tag.Get("required"); s != "" {
