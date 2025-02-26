@@ -9,8 +9,10 @@ import (
 )
 
 func main() {
+	// Initialize the OpenAI client with the API key
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 
+	// Create an image based on a text prompt
 	respUrl, err := client.CreateImage(
 		context.Background(),
 		openai.ImageRequest{
