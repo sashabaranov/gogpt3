@@ -19,6 +19,19 @@ const (
 	BatchEndpointEmbeddings      BatchEndpoint = "/v1/embeddings"
 )
 
+type BatchStatus string
+
+const (
+	BatchStatusValidating BatchStatus = "validating"
+	BatchStatusFailed     BatchStatus = "failed"
+	BatchStatusInProgress BatchStatus = "in_progress"
+	BatchStatusFinalizing BatchStatus = "finalizing"
+	BatchStatusCompleted  BatchStatus = "completed"
+	BatchStatusExpired    BatchStatus = "expired"
+	BatchStatusCancelling BatchStatus = "cancelling"
+	BatchStatusCancelled  BatchStatus = "cancelled"
+)
+
 type BatchLineItem interface {
 	MarshalBatchLineItem() []byte
 }
@@ -60,34 +73,38 @@ func (r BatchEmbeddingRequest) MarshalBatchLineItem() []byte {
 }
 
 type Batch struct {
-	ID       string        `json:"id"`
-	Object   string        `json:"object"`
-	Endpoint BatchEndpoint `json:"endpoint"`
-	Errors   *struct {
-		Object string `json:"object,omitempty"`
-		Data   []struct {
-			Code    string  `json:"code,omitempty"`
-			Message string  `json:"message,omitempty"`
-			Param   *string `json:"param,omitempty"`
-			Line    *int    `json:"line,omitempty"`
-		} `json:"data"`
-	} `json:"errors"`
+	ID               string             `json:"id"`
+	Object           string             `json:"object"`
 	InputFileID      string             `json:"input_file_id"`
 	CompletionWindow string             `json:"completion_window"`
-	Status           string             `json:"status"`
-	OutputFileID     *string            `json:"output_file_id"`
-	ErrorFileID      *string            `json:"error_file_id"`
-	CreatedAt        int                `json:"created_at"`
-	InProgressAt     *int               `json:"in_progress_at"`
-	ExpiresAt        *int               `json:"expires_at"`
-	FinalizingAt     *int               `json:"finalizing_at"`
-	CompletedAt      *int               `json:"completed_at"`
-	FailedAt         *int               `json:"failed_at"`
-	ExpiredAt        *int               `json:"expired_at"`
-	CancellingAt     *int               `json:"cancelling_at"`
-	CancelledAt      *int               `json:"cancelled_at"`
-	RequestCounts    BatchRequestCounts `json:"request_counts"`
+	Endpoint         BatchEndpoint      `json:"endpoint"`
+	Status           BatchStatus        `json:"status"`
+	Errors           *BatchErrors       `json:"errors,omitempty"`
+	OutputFileID     string             `json:"output_file_id,omitempty"`
+	ErrorFileID      string             `json:"error_file_id,omitempty"`
+	CreatedAt        int64              `json:"created_at"`
+	InProgressAt     int64              `json:"in_progress_at,omitempty"`
+	ExpiresAt        int64              `json:"expires_at,omitempty"`
+	FinalizingAt     int64              `json:"finalizing_at,omitempty"`
+	CompletedAt      int64              `json:"completed_at,omitempty"`
+	FailedAt         int64              `json:"failed_at,omitempty"`
+	ExpiredAt        int64              `json:"expired_at,omitempty"`
+	CancellingAt     int64              `json:"cancelling_at,omitempty"`
+	CancelledAt      int64              `json:"cancelled_at,omitempty"`
+	RequestCounts    BatchRequestCounts `json:"request_counts,omitempty"`
 	Metadata         map[string]any     `json:"metadata"`
+}
+
+type BatchErrors struct {
+	Object string       `json:"object,omitempty"`
+	Data   []BatchError `json:"data"`
+}
+
+type BatchError struct {
+	Code    string `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
+	Param   string `json:"param,omitempty"`
+	Line    int    `json:"line,omitempty"`
 }
 
 type BatchRequestCounts struct {
