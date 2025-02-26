@@ -39,6 +39,7 @@ type ClientConfig struct {
 
 	BaseURL              string
 	OrgID                string
+	ProjectID            string
 	APIType              APIType
 	APIVersion           string // required when APIType is APITypeAzure or APITypeAzureAD or APITypeAnthropic
 	AssistantVersion     string
@@ -55,6 +56,7 @@ func DefaultConfig(authToken string) ClientConfig {
 		APIType:          APITypeOpenAI,
 		AssistantVersion: defaultAssistantVersion,
 		OrgID:            "",
+		ProjectID:        "",
 
 		HTTPClient: &http.Client{},
 
