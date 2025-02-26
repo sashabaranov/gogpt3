@@ -9,7 +9,9 @@ import (
 )
 
 type FileRequest struct {
-	FileName string `json:"file"`
+	// This parameter is unused.
+	FileName string `json:"-"`
+
 	FilePath string `json:"-"`
 	Purpose  string `json:"purpose"`
 }
@@ -87,7 +89,9 @@ func (c *Client) CreateFileBytes(ctx context.Context, request FileBytesRequest) 
 	return
 }
 
-// CreateFile uploads a jsonl file to GPT3
+// CreateFile reads the contents at request.FilePath from disk, builds a jsonl
+// file, and uploads it to OpenAI.
+//
 // FilePath must be a local file path.
 func (c *Client) CreateFile(ctx context.Context, request FileRequest) (file File, err error) {
 	var b bytes.Buffer
