@@ -28,7 +28,7 @@ const (
 // It is fairly limited, and you may have better luck using a third-party library.
 type Definition struct {
 	// Type specifies the data type of the schema.
-	Type DataType `json:"type,omitempty"`
+	Type []DataType `json:"type,omitempty"`
 	// Description is the description of the schema.
 	Description string `json:"description,omitempty"`
 	// Enum is used to restrict a value to a fixed set of values. It must be an array with at least
@@ -44,7 +44,7 @@ type Definition struct {
 	// that are not explicitly defined in the properties section of the schema. example:
 	// additionalProperties: true
 	// additionalProperties: false
-	// additionalProperties: jsonschema.Definition{Type: jsonschema.String}
+	// additionalProperties: jsonschema.Definition{Type: []jsonschema.DataType{jsonschema.String}}
 	AdditionalProperties any `json:"additionalProperties,omitempty"`
 }
 
@@ -72,23 +72,23 @@ func reflectSchema(t reflect.Type) (*Definition, error) {
 	var d Definition
 	switch t.Kind() {
 	case reflect.String:
-		d.Type = String
+		d.Type = []DataType{String}
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		d.Type = Integer
+		d.Type = []DataType{Integer}
 	case reflect.Float32, reflect.Float64:
-		d.Type = Number
+		d.Type = []DataType{Number}
 	case reflect.Bool:
-		d.Type = Boolean
+		d.Type = []DataType{Boolean}
 	case reflect.Slice, reflect.Array:
-		d.Type = Array
+		d.Type = []DataType{Array}
 		items, err := reflectSchema(t.Elem())
 		if err != nil {
 			return nil, err
 		}
 		d.Items = items
 	case reflect.Struct:
-		d.Type = Object
+		d.Type = []DataType{Object}
 		d.AdditionalProperties = false
 		object, err := reflectSchemaObject(t)
 		if err != nil {
@@ -101,6 +101,7 @@ func reflectSchema(t reflect.Type) (*Definition, error) {
 			return nil, err
 		}
 		d = *definition
+		d.Type = append(d.Type, Null)
 	case reflect.Invalid, reflect.Uintptr, reflect.Complex64, reflect.Complex128,
 		reflect.Chan, reflect.Func, reflect.Interface, reflect.Map,
 		reflect.UnsafePointer:
@@ -112,7 +113,7 @@ func reflectSchema(t reflect.Type) (*Definition, error) {
 
 func reflectSchemaObject(t reflect.Type) (*Definition, error) {
 	var d = Definition{
-		Type:                 Object,
+		Type:                 []DataType{Object},
 		AdditionalProperties: false,
 	}
 	properties := make(map[string]Definition)

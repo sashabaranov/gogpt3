@@ -91,14 +91,14 @@ func TestAPI(t *testing.T) {
 			Functions: []openai.FunctionDefinition{{
 				Name: "get_current_weather",
 				Parameters: jsonschema.Definition{
-					Type: jsonschema.Object,
+					Type: []jsonschema.DataType{jsonschema.Object},
 					Properties: map[string]jsonschema.Definition{
 						"location": {
-							Type:        jsonschema.String,
+							Type:        []jsonschema.DataType{jsonschema.String},
 							Description: "The city and state, e.g. San Francisco, CA",
 						},
 						"unit": {
-							Type: jsonschema.String,
+							Type: []jsonschema.DataType{jsonschema.String},
 							Enum: []string{"celsius", "fahrenheit"},
 						},
 					},
@@ -273,19 +273,19 @@ func TestChatCompletionStructuredOutputsFunctionCalling(t *testing.T) {
 						Name:   "display_cases",
 						Strict: true,
 						Parameters: &jsonschema.Definition{
-							Type: jsonschema.Object,
+							Type: []jsonschema.DataType{jsonschema.Object},
 							Properties: map[string]jsonschema.Definition{
 								"PascalCase": {
-									Type: jsonschema.String,
+									Type: []jsonschema.DataType{jsonschema.String},
 								},
 								"CamelCase": {
-									Type: jsonschema.String,
+									Type: []jsonschema.DataType{jsonschema.String},
 								},
 								"KebabCase": {
-									Type: jsonschema.String,
+									Type: []jsonschema.DataType{jsonschema.String},
 								},
 								"SnakeCase": {
-									Type: jsonschema.String,
+									Type: []jsonschema.DataType{jsonschema.String},
 								},
 							},
 							Required:             []string{"PascalCase", "CamelCase", "KebabCase", "SnakeCase"},

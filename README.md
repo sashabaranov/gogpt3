@@ -628,14 +628,14 @@ Using the `jsonschema` package, this schema could be created using structs as su
 FunctionDefinition{
   Name: "get_current_weather",
   Parameters: jsonschema.Definition{
-    Type: jsonschema.Object,
+    Type: []jsonschema.DataType{jsonschema.Object},
     Properties: map[string]jsonschema.Definition{
       "location": {
-        Type: jsonschema.String,
+        Type: []jsonschema.DataType{jsonschema.String},
         Description: "The city and state, e.g. San Francisco, CA",
       },
       "unit": {
-        Type: jsonschema.String,
+        Type: []jsonschema.DataType{jsonschema.String},
         Enum: []string{"celsius", "fahrenheit"},
       },
     },

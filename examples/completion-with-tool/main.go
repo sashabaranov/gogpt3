@@ -15,14 +15,14 @@ func main() {
 
 	// describe the function & its inputs
 	params := jsonschema.Definition{
-		Type: jsonschema.Object,
+		Type: []jsonschema.DataType{jsonschema.Object},
 		Properties: map[string]jsonschema.Definition{
 			"location": {
-				Type:        jsonschema.String,
+				Type:        []jsonschema.DataType{jsonschema.String},
 				Description: "The city and state, e.g. San Francisco, CA",
 			},
 			"unit": {
-				Type: jsonschema.String,
+				Type: []jsonschema.DataType{jsonschema.String},
 				Enum: []string{"celsius", "fahrenheit"},
 			},
 		},

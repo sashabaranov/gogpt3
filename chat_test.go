@@ -531,21 +531,21 @@ func TestChatCompletionsFunctions(t *testing.T) {
 			Functions: []openai.FunctionDefinition{{
 				Name: "test",
 				Parameters: &jsonschema.Definition{
-					Type: jsonschema.Object,
+					Type: []jsonschema.DataType{jsonschema.Object},
 					Properties: map[string]jsonschema.Definition{
 						"count": {
-							Type:        jsonschema.Number,
+							Type:        []jsonschema.DataType{jsonschema.Number},
 							Description: "total number of words in sentence",
 						},
 						"words": {
-							Type:        jsonschema.Array,
+							Type:        []jsonschema.DataType{jsonschema.Array},
 							Description: "list of words in sentence",
 							Items: &jsonschema.Definition{
-								Type: jsonschema.String,
+								Type: []jsonschema.DataType{jsonschema.String},
 							},
 						},
 						"enumTest": {
-							Type: jsonschema.String,
+							Type: []jsonschema.DataType{jsonschema.String},
 							Enum: []string{"hello", "world"},
 						},
 					},
@@ -568,21 +568,21 @@ func TestChatCompletionsFunctions(t *testing.T) {
 			Functions: []openai.FunctionDefine{{
 				Name: "test",
 				Parameters: &jsonschema.Definition{
-					Type: jsonschema.Object,
+					Type: []jsonschema.DataType{jsonschema.Object},
 					Properties: map[string]jsonschema.Definition{
 						"count": {
-							Type:        jsonschema.Number,
+							Type:        []jsonschema.DataType{jsonschema.Number},
 							Description: "total number of words in sentence",
 						},
 						"words": {
-							Type:        jsonschema.Array,
+							Type:        []jsonschema.DataType{jsonschema.Array},
 							Description: "list of words in sentence",
 							Items: &jsonschema.Definition{
-								Type: jsonschema.String,
+								Type: []jsonschema.DataType{jsonschema.String},
 							},
 						},
 						"enumTest": {
-							Type: jsonschema.String,
+							Type: []jsonschema.DataType{jsonschema.String},
 							Enum: []string{"hello", "world"},
 						},
 					},
