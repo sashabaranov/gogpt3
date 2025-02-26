@@ -179,7 +179,7 @@ type EmbeddingRequestStrings struct {
 	// or see our Model overview for descriptions of them.
 	Model EmbeddingModel `json:"model"`
 	// A unique identifier representing your end-user, which will help OpenAI to monitor and detect abuse.
-	User string `json:"user"`
+	User string `json:"user,omitempty"`
 	// EmbeddingEncodingFormat is the format of the embeddings data.
 	// Currently, only "float" and "base64" are supported, however, "base64" is not officially documented.
 	// If not specified OpenAI will use "float".
@@ -211,7 +211,7 @@ type EmbeddingRequestTokens struct {
 	// or see our Model overview for descriptions of them.
 	Model EmbeddingModel `json:"model"`
 	// A unique identifier representing your end-user, which will help OpenAI to monitor and detect abuse.
-	User string `json:"user"`
+	User string `json:"user,omitempty"`
 	// EmbeddingEncodingFormat is the format of the embeddings data.
 	// Currently, only "float" and "base64" are supported, however, "base64" is not officially documented.
 	// If not specified OpenAI will use "float".
