@@ -206,6 +206,79 @@ func main() {
 </details>
 
 <details>
+<summary>Assistant Invocation</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/sashabaranov/go-openai"
+)
+
+func main() {
+	client := openai.NewClient("your token")
+	ctx := context.Background()
+
+	thread, err := client.CreateThread(ctx, openai.ThreadRequest{})
+	if err != nil {
+		fmt.Printf("CreateThread error: %v\n", err)
+		return
+	}
+
+	messageReq := openai.MessageRequest{
+		Role:    openai.ChatMessageRoleUser,
+		Content: "Lorem ipsum",
+	}
+	_, err = client.CreateMessage(ctx, thread.ID, messageReq)
+	if err != nil {
+		fmt.Printf("CreateMessage error: %v\n", err)
+		return
+	}
+
+	runReq := openai.RunRequest{
+		AssistantID: "your assistant id",
+	}
+	run, err := client.CreateRun(ctx, thread.ID, runReq)
+	if err != nil {
+		fmt.Printf("CreateRun error: %v\n", err)
+		return
+	}
+
+	// Poll for a status that indicates run has finished
+	for run.Status == openai.RunStatusQueued || run.Status == openai.RunStatusInProgress {
+		run, err = client.RetrieveRun(ctx, run.ThreadID, run.ID)
+		if err != nil {
+			fmt.Printf("RetrieveRun error: %v\n", err)
+			return
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	if run.Status != openai.RunStatusCompleted {
+		fmt.Printf("Run finised with status: %v\n", run.Status)
+		if run.Status == openai.RunStatusFailed {
+			fmt.Printf("Run error: [%v] %v\n", run.LastError.Code, run.LastError.Message)
+		}
+		return
+	}
+
+	// Get only latest message
+	numMessages := 1
+	messages, err := client.ListMessage(ctx, run.ThreadID, &numMessages, nil, nil, nil)
+	if err != nil {
+		fmt.Printf("RetrieveRun error: %v\n", err)
+		return
+	}
+
+	fmt.Printf(messages.Messages[0].Content[0].Text.Value)
+}
+```
+</details>
+
+<details>
 <summary>Audio Speech-To-Text</summary>
 
 ```go
