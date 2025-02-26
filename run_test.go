@@ -204,6 +204,7 @@ func TestRun(t *testing.T) {
 	_, err = client.CancelRun(ctx, threadID, runID)
 	checks.NoError(t, err, "CancelRun error")
 
+	prompt := "Hello, World!"
 	_, err = client.CreateThreadAndRun(ctx, openai.CreateThreadAndRunRequest{
 		RunRequest: openai.RunRequest{
 			AssistantID: assistantID,
@@ -211,8 +212,13 @@ func TestRun(t *testing.T) {
 		Thread: openai.ThreadRequest{
 			Messages: []openai.ThreadMessage{
 				{
-					Role:    openai.ThreadMessageRoleUser,
-					Content: "Hello, World!",
+					Role: openai.ThreadMessageRoleUser,
+					Content: []openai.ThreadMessageContent{
+						{
+							Type: "text",
+							Text: prompt,
+						},
+					},
 				},
 			},
 		},
