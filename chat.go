@@ -129,6 +129,17 @@ func (m ChatCompletionMessage) MarshalJSON() ([]byte, error) {
 			ToolCallID   string            `json:"tool_call_id,omitempty"`
 		}(m)
 		return json.Marshal(msg)
+	} else if len(m.ToolCalls) > 0 && m.Content == "" {
+		msg := struct {
+			Role         string            `json:"role"`
+			Content      string            `json:"-"`
+			MultiContent []ChatMessagePart `json:"-"`
+			Name         string            `json:"name,omitempty"`
+			FunctionCall *FunctionCall     `json:"function_call,omitempty"`
+			ToolCalls    []ToolCall        `json:"tool_calls,omitempty"`
+			ToolCallID   string            `json:"tool_call_id,omitempty"`
+		}(m)
+		return json.Marshal(msg)
 	}
 
 	msg := struct {

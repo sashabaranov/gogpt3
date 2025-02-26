@@ -739,6 +739,29 @@ func TestMultipartChatMessageSerialization(t *testing.T) {
 	}
 }
 
+func TestToolCallChatMessageSerialization(t *testing.T) {
+	jsonText := `{"role":"assistant","tool_calls":` +
+		`[{"id":"123","type":"function","function":{"name":"my_func","arguments":"{}"}}]}`
+
+	toolCallMsg := openai.ChatCompletionMessage{
+		Role: openai.ChatMessageRoleAssistant,
+		ToolCalls: []openai.ToolCall{{
+			ID:       "123",
+			Type:     openai.ToolTypeFunction,
+			Function: openai.FunctionCall{Name: "my_func", Arguments: "{}"},
+		}},
+	}
+
+	s, err := json.Marshal(toolCallMsg)
+	if err != nil {
+		t.Fatalf("Expected no error: %s", err)
+	}
+	res := strings.ReplaceAll(string(s), " ", "")
+	if res != jsonText {
+		t.Fatalf("invalid message: %s", string(s))
+	}
+}
+
 // handleChatCompletionEndpoint Handles the ChatGPT completion endpoint by the test server.
 func handleChatCompletionEndpoint(w http.ResponseWriter, r *http.Request) {
 	var err error
