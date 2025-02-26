@@ -189,6 +189,7 @@ type FunctionCall struct {
 	Name string `json:"name,omitempty"`
 	// call function with arguments in JSON format
 	Arguments string `json:"arguments,omitempty"`
+	Output    string `json:"output,omitempty"`
 }
 
 type ChatCompletionResponseFormatType string

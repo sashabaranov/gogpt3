@@ -52,6 +52,18 @@ func TestRun(t *testing.T) {
 							Object:    "run",
 							CreatedAt: 1234567890,
 							Status:    openai.RunStepStatusCompleted,
+							StepDetails: openai.StepDetails{
+								Type: openai.RunStepTypeToolCalls,
+								ToolCalls: []openai.ToolCall{
+									{
+										Function: openai.FunctionCall{
+											Name:      "test",
+											Arguments: "{}",
+											Output:    "test",
+										},
+									},
+								},
+							},
 						},
 					},
 				})
