@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"math"
 	"net/http"
@@ -160,6 +161,9 @@ type EmbeddingRequest struct {
 	// Dimensions The number of dimensions the resulting output embeddings should have.
 	// Only supported in text-embedding-3 and later models.
 	Dimensions int `json:"dimensions,omitempty"`
+	// The ExtraBody field allows for the inclusion of arbitrary key-value pairs
+	// in the request body that may not be explicitly defined in this struct.
+	ExtraBody map[string]any `json:"extra_body,omitempty"`
 }
 
 func (r EmbeddingRequest) Convert() EmbeddingRequest {
@@ -187,6 +191,9 @@ type EmbeddingRequestStrings struct {
 	// Dimensions The number of dimensions the resulting output embeddings should have.
 	// Only supported in text-embedding-3 and later models.
 	Dimensions int `json:"dimensions,omitempty"`
+	// The ExtraBody field allows for the inclusion of arbitrary key-value pairs
+	// in the request body that may not be explicitly defined in this struct.
+	ExtraBody map[string]any `json:"extra_body,omitempty"`
 }
 
 func (r EmbeddingRequestStrings) Convert() EmbeddingRequest {
@@ -196,6 +203,7 @@ func (r EmbeddingRequestStrings) Convert() EmbeddingRequest {
 		User:           r.User,
 		EncodingFormat: r.EncodingFormat,
 		Dimensions:     r.Dimensions,
+		ExtraBody:      r.ExtraBody,
 	}
 }
 
@@ -219,6 +227,9 @@ type EmbeddingRequestTokens struct {
 	// Dimensions The number of dimensions the resulting output embeddings should have.
 	// Only supported in text-embedding-3 and later models.
 	Dimensions int `json:"dimensions,omitempty"`
+	// The ExtraBody field allows for the inclusion of arbitrary key-value pairs
+	// in the request body that may not be explicitly defined in this struct.
+	ExtraBody map[string]any `json:"extra_body,omitempty"`
 }
 
 func (r EmbeddingRequestTokens) Convert() EmbeddingRequest {
@@ -228,6 +239,7 @@ func (r EmbeddingRequestTokens) Convert() EmbeddingRequest {
 		User:           r.User,
 		EncodingFormat: r.EncodingFormat,
 		Dimensions:     r.Dimensions,
+		ExtraBody:      r.ExtraBody,
 	}
 }
 
@@ -241,11 +253,29 @@ func (c *Client) CreateEmbeddings(
 	conv EmbeddingRequestConverter,
 ) (res EmbeddingResponse, err error) {
 	baseReq := conv.Convert()
+
+	// The body map is used to dynamically construct the request payload for the embedding API.
+	// Instead of relying on a fixed struct, the body map allows for flexible inclusion of fields
+	// based on their presence, avoiding unnecessary or empty fields in the request.
+	extraBody := baseReq.ExtraBody
+	baseReq.ExtraBody = nil
+
+	// Serialize baseReq to JSON
+	jsonData, err := json.Marshal(baseReq)
+	if err != nil {
+		return
+	}
+
+	// Deserialize JSON to map[string]any
+	var body map[string]any
+	_ = json.Unmarshal(jsonData, &body)
+
 	req, err := c.newRequest(
 		ctx,
 		http.MethodPost,
 		c.fullURL("/embeddings", withModel(string(baseReq.Model))),
-		withBody(baseReq),
+		withBody(body),           // Main request body.
+		withExtraBody(extraBody), // Merge ExtraBody fields.
 	)
 	if err != nil {
 		return

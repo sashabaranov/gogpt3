@@ -84,6 +84,20 @@ func withBody(body any) requestOption {
 	}
 }
 
+func withExtraBody(extraBody map[string]any) requestOption {
+	return func(args *requestOptions) {
+		// Assert that args.body is a map[string]any.
+		bodyMap, ok := args.body.(map[string]any)
+		if ok {
+			// If it's a map[string]any then only add extraBody
+			// fields to args.body otherwise keep only fields in request struct.
+			for key, value := range extraBody {
+				bodyMap[key] = value
+			}
+		}
+	}
+}
+
 func withContentType(contentType string) requestOption {
 	return func(args *requestOptions) {
 		args.header.Set("Content-Type", contentType)
