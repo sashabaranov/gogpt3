@@ -2,8 +2,10 @@ package openai
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -308,6 +310,14 @@ func (c *Client) handleErrorResp(resp *http.Response) error {
 		}
 		if errRes.Error != nil {
 			reqErr.Err = errRes.Error
+			return reqErr
+		}
+		buf := new(bytes.Buffer)
+		_, err = buf.ReadFrom(resp.Body)
+		if err != nil {
+			reqErr.Err = err
+		} else {
+			reqErr.Err = errors.New(buf.String())
 		}
 		return reqErr
 	}
